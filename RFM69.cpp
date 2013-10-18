@@ -10,6 +10,9 @@
 #include <RFM69registers.h>
 #include <SPI.h>
 
+#define  RF_BITRATEMSB_CUSTOM  0x2e
+#define  RF_BITRATELSB_CUSTOM  0x66
+
 volatile byte RFM69::DATA[MAX_DATA_LEN];
 volatile byte RFM69::_mode;       // current transceiver state
 volatile byte RFM69::DATALEN;
@@ -26,10 +29,10 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
   {
     /* 0x01 */ { REG_OPMODE, RF_OPMODE_SEQUENCER_ON | RF_OPMODE_LISTEN_OFF | RF_OPMODE_STANDBY },
     /* 0x02 */ { REG_DATAMODUL, RF_DATAMODUL_DATAMODE_PACKET | RF_DATAMODUL_MODULATIONTYPE_FSK | RF_DATAMODUL_MODULATIONSHAPING_00 }, //no shaping
-    /* 0x03 */ { REG_BITRATEMSB, RF_BITRATEMSB_55555}, //default:4.8 KBPS
-    /* 0x04 */ { REG_BITRATELSB, RF_BITRATELSB_55555},
-    /* 0x05 */ { REG_FDEVMSB, RF_FDEVMSB_50000}, //default:5khz, (FDEV + BitRate/2 <= 500Khz)
-    /* 0x06 */ { REG_FDEVLSB, RF_FDEVLSB_50000},
+    /* 0x03 */ { REG_BITRATEMSB, RF_BITRATEMSB_CUSTOM},
+    /* 0x04 */ { REG_BITRATELSB, RF_BITRATELSB_CUSTOM},
+    /* 0x05 */ { REG_FDEVMSB, RF_FDEVMSB_90000}, //default:90khz, (FDEV + BitRate/2 <= 500Khz)
+    /* 0x06 */ { REG_FDEVLSB, RF_FDEVLSB_90000},
 
     /* 0x07 */ { REG_FRFMSB, (freqBand==RF69_315MHZ ? RF_FRFMSB_315 : (freqBand==RF69_433MHZ ? RF_FRFMSB_433 : (freqBand==RF69_868MHZ ? RF_FRFMSB_868 : RF_FRFMSB_915))) },
     /* 0x08 */ { REG_FRFMID, (freqBand==RF69_315MHZ ? RF_FRFMID_315 : (freqBand==RF69_433MHZ ? RF_FRFMID_433 : (freqBand==RF69_868MHZ ? RF_FRFMID_868 : RF_FRFMID_915))) },
