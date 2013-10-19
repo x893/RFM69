@@ -29,10 +29,10 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
   {
     /* 0x01 */ { REG_OPMODE, RF_OPMODE_SEQUENCER_ON | RF_OPMODE_LISTEN_OFF | RF_OPMODE_STANDBY },
     /* 0x02 */ { REG_DATAMODUL, RF_DATAMODUL_DATAMODE_PACKET | RF_DATAMODUL_MODULATIONTYPE_FSK | RF_DATAMODUL_MODULATIONSHAPING_00 }, //no shaping
-    /* 0x03 */ { REG_BITRATEMSB, RF_BITRATEMSB_CUSTOM},
-    /* 0x04 */ { REG_BITRATELSB, RF_BITRATELSB_CUSTOM},
-    /* 0x05 */ { REG_FDEVMSB, RF_FDEVMSB_90000}, //default:90khz, (FDEV + BitRate/2 <= 500Khz)
-    /* 0x06 */ { REG_FDEVLSB, RF_FDEVLSB_90000},
+    /* 0x03 */ { REG_BITRATEMSB, RF_BITRATEMSB_CUSTOM },
+    /* 0x04 */ { REG_BITRATELSB, RF_BITRATELSB_CUSTOM },
+    /* 0x05 */ { REG_FDEVMSB, RF_FDEVMSB_90000 }, //default:90khz, (FDEV + BitRate/2 <= 500Khz)
+    /* 0x06 */ { REG_FDEVLSB, RF_FDEVLSB_90000 },
 
     /* 0x07 */ { REG_FRFMSB, (freqBand==RF69_315MHZ ? RF_FRFMSB_315 : (freqBand==RF69_433MHZ ? RF_FRFMSB_433 : (freqBand==RF69_868MHZ ? RF_FRFMSB_868 : RF_FRFMSB_915))) },
     /* 0x08 */ { REG_FRFMID, (freqBand==RF69_315MHZ ? RF_FRFMID_315 : (freqBand==RF69_433MHZ ? RF_FRFMID_433 : (freqBand==RF69_868MHZ ? RF_FRFMID_868 : RF_FRFMID_915))) },
@@ -54,9 +54,10 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
     /* 0x2e */ { REG_SYNCCONFIG, RF_SYNC_ON | RF_SYNC_FIFOFILL_AUTO | RF_SYNC_SIZE_2 | RF_SYNC_TOL_0 },
     /* 0x2f */ { REG_SYNCVALUE1, 0x2D },      //attempt to make this compatible with sync1 byte of RFM12B lib
     /* 0x30 */ { REG_SYNCVALUE2, networkID }, //NETWORK ID
-    /* 0x37 */ { REG_PACKETCONFIG1, RF_PACKET1_FORMAT_VARIABLE | RF_PACKET1_DCFREE_OFF | RF_PACKET1_CRC_ON | RF_PACKET1_CRCAUTOCLEAR_ON | RF_PACKET1_ADRSFILTERING_OFF },
+    /* 0x37 */ { REG_PACKETCONFIG1, RF_PACKET1_FORMAT_VARIABLE | RF_PACKET1_DCFREE_OFF | RF_PACKET1_CRC_ON | RF_PACKET1_CRCAUTOCLEAR_ON | RF_PACKET1_ADRSFILTERING_NODEBROADCAST },
     /* 0x38 */ { REG_PAYLOADLENGTH, 66 }, //in variable length mode: the max frame size, not used in TX
-    //* 0x39 */ { REG_NODEADRS, nodeID }, //turned off because we're not using address filtering
+    /* 0x39 */ { REG_NODEADRS, nodeID }, //address filtering
+    /* 0x3a */ { REG_BROADCASTADRS, 0 }, //0 is the broadcast address
     /* 0x3C */ { REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTART_FIFONOTEMPTY | RF_FIFOTHRESH_VALUE }, //TX on FIFO not empty
     /* 0x3d */ { REG_PACKETCONFIG2, RF_PACKET2_RXRESTARTDELAY_2BITS | RF_PACKET2_AUTORXRESTART_ON | RF_PACKET2_AES_OFF }, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
     /* 0x6F */ { REG_TESTDAGC, RF_DAGC_CONTINUOUS }, // run DAGC continuously in RX mode
@@ -245,6 +246,12 @@ void RFM69::interruptHandler() {
       PAYLOADLEN = 0;
       unselect();
       //digitalWrite(4, 0);
+      return;
+    }
+    if (PAYLOADLEN < 3) //payload too short?
+    {
+      PAYLOADLEN = 0;
+      unselect();
       return;
     }
     DATALEN = PAYLOADLEN - 3;
