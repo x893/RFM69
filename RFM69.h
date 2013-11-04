@@ -55,6 +55,7 @@ class RFM69 {
     bool canSend();
     void send(byte toAddress, const void* buffer, byte bufferSize, bool requestACK=false);
     bool sendWithRetry(byte toAddress, const void* buffer, byte bufferSize, byte retries=2, byte retryWaitTime=15);
+    void receiveStart();
     bool receiveDone();
     bool ACKReceived(byte fromNodeID);
     void sendACK(const void* buffer = "", uint8_t bufferSize=0);

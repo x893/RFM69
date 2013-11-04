@@ -149,6 +149,10 @@ bool RFM69::canSend()
     setMode(RF69_MODE_STANDBY);
     return true;
   }
+  else if (_mode == RF69_MODE_STANDBY)
+  {
+    return true;
+  }
   return false;
 }
 
@@ -272,6 +276,13 @@ void RFM69::interruptHandler() {
 }
 
 void RFM69::isr0() { selfPointer->interruptHandler(); }
+
+void RFM69::receiveStart() {
+  if (_mode != RF69_MODE_RX)
+  {
+    receiveBegin();
+  }
+}
 
 void RFM69::receiveBegin() {
   DATALEN = 0;
