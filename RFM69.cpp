@@ -146,7 +146,11 @@ void RFM69::setPowerLevel(byte powerLevel)
 
 bool RFM69::canSend()
 {
+#if DISABLE_RSSI_CHECK
+  if (_mode == RF69_MODE_RX && PAYLOADLEN == 0)
+#else
   if (_mode == RF69_MODE_RX && PAYLOADLEN == 0 && readRSSI() < CSMA_LIMIT) //if signal stronger than -100dBm is detected assume channel activity
+#endif
   {
     setMode(RF69_MODE_STANDBY);
     return true;
@@ -274,7 +278,9 @@ void RFM69::interruptHandler() {
     unselect();
     setMode(RF69_MODE_RX);
   }
+#if !DISABLE_RSSI_CHECK
   RSSI = readRSSI();
+#endif
   //digitalWrite(4, 0);
 }
 
