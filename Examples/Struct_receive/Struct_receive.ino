@@ -120,7 +120,7 @@ void loop() {
         Serial.print(theNodeID);
         Serial.print(" - ACK...");
         delay(3); //need this when sending right after reception .. ?
-        if (radio.sendWithRetry(theNodeID, "ACK TEST", 8, 0))  // 0 = only 1 attempt, no retries
+        if (radio.sendWithRetry(theNodeID, "ACK TEST", 8, 0, 50))  // 0 = only 1 attempt, no retries; wait up to 50mS
           Serial.print("ok!");
         else Serial.print("nothing");
       }
