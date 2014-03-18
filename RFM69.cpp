@@ -188,14 +188,14 @@ bool RFM69::sendWithRetry(byte toAddress, const void* buffer, byte bufferSize, b
   {
     send(toAddress, buffer, bufferSize, true);
     sentTime = millis();
-    while (millis()-sentTime<retryWaitTime)
+    do
     {
       if (ACKReceived(toAddress))
       {
         //Serial.print(" ~ms:");Serial.print(millis()-sentTime);
         return true;
       }
-    }
+    } while (millis()-sentTime<retryWaitTime);
     //Serial.print(" RETRY#");Serial.println(i+1);
   }
   return false;
