@@ -47,6 +47,8 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
     ///* 0x11 */ { REG_PALEVEL, RF_PALEVEL_PA0_ON | RF_PALEVEL_PA1_OFF | RF_PALEVEL_PA2_OFF | RF_PALEVEL_OUTPUTPOWER_11111},
     ///* 0x13 */ { REG_OCP, RF_OCP_ON | RF_OCP_TRIM_95 }, //over current protection (default is 95mA)
     
+    ///* 0x18*/ { REG_LNA,  RF_LNA_ZIN_200 | RF_LNA_CURRENTGAIN }, //as suggested by mav here: http://lowpowerlab.com/forum/index.php/topic,296.msg1571.html
+    
     // RXBW defaults are { REG_RXBW, RF_RXBW_DCCFREQ_010 | RF_RXBW_MANT_24 | RF_RXBW_EXP_5} (RxBw: 10.4khz)
     /* 0x19 */ { REG_RXBW, RF_RXBW_DCCFREQ_010 | RF_RXBW_MANT_16 | RF_RXBW_EXP_2 }, //(BitRate < 2 * RxBw)
     /* 0x25 */ { REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_01 }, //DIO0 is the only IRQ we're using
@@ -62,7 +64,7 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
     /* 0x3a */ { REG_BROADCASTADRS, 0 }, //0 is the broadcast address
     /* 0x3C */ { REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTART_FIFONOTEMPTY | RF_FIFOTHRESH_VALUE }, //TX on FIFO not empty
     /* 0x3d */ { REG_PACKETCONFIG2, RF_PACKET2_RXRESTARTDELAY_2BITS | RF_PACKET2_AUTORXRESTART_ON | RF_PACKET2_AES_OFF }, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
-    /* 0x6F */ { REG_TESTDAGC, RF_DAGC_CONTINUOUS }, // run DAGC continuously in RX mode
+    /* 0x6F */ { REG_TESTDAGC, RF_DAGC_IMPROVED_LOWBETA0 }, // run DAGC continuously in RX mode, recommended default for AfcLowBetaOn=0
     {255, 0}
   };
 
@@ -77,6 +79,10 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
   
   for (byte i = 0; CONFIG[i][0] != 255; i++)
     writeReg(CONFIG[i][0], CONFIG[i][1]);
+
+  // Encryption is persistent between resets and can trip you up during debugging.
+  // Disable it during initialization so we always start from a known state.
+  encrypt(0);
 
   setHighPower(_isRFM69HW); //called regardless if it's a RFM69W or RFM69HW
   setMode(RF69_MODE_STANDBY);
@@ -198,7 +204,7 @@ bool RFM69::sendWithRetry(byte toAddress, const void* buffer, byte bufferSize, b
 /// Should be polled immediately after sending a packet with ACK request
 bool RFM69::ACKReceived(byte fromNodeID) {
   if (receiveDone())
-    return (SENDERID == fromNodeID || fromNodeID == 0) && ACK_RECEIVED;
+    return (SENDERID == fromNodeID || fromNodeID == RF69_BROADCAST_ADDR) && ACK_RECEIVED;
   return false;
 }
 
@@ -252,7 +258,7 @@ void RFM69::interruptHandler() {
     PAYLOADLEN = SPI.transfer(0);
     PAYLOADLEN = PAYLOADLEN > 66 ? 66 : PAYLOADLEN; //precaution
     TARGETID = SPI.transfer(0);
-    if(!(_promiscuousMode || TARGETID==_address || TARGETID==0)) //match this node's address, or broadcast addr 0x0 or anything in promiscuous mode
+    if(!(_promiscuousMode || TARGETID==_address || TARGETID==RF69_BROADCAST_ADDR)) //match this node's address, or broadcast address or anything in promiscuous mode
     {
       PAYLOADLEN = 0;
       unselect();
@@ -311,11 +317,16 @@ void RFM69::receiveBegin() {
 bool RFM69::receiveDone() {
 // ATOMIC_BLOCK(ATOMIC_FORCEON)
 // {
-  noInterrupts(); //re-enabled in unselect() via setMode()
+  noInterrupts(); //re-enabled in unselect() via setMode() or via receiveBegin()
   if (_mode == RF69_MODE_RX && PAYLOADLEN>0)
   {
-    setMode(RF69_MODE_STANDBY);
+    setMode(RF69_MODE_STANDBY); //enables interrupts
     return true;
+  }
+  else if (_mode == RF69_MODE_RX)  //already in RX no payload yet
+  {
+    interrupts(); //explicitly re-enable interrupts
+    return false;
   }
   receiveBegin();
   return false;

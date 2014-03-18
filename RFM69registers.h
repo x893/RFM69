@@ -21,7 +21,7 @@
 #define REG_FRFMID			  0x08
 #define REG_FRFLSB		  	0x09
 #define REG_OSC1		  	  0x0A
-#define REG_OSC2	  		  0x0B
+#define REG_AFCCTRL   		0x0B
 #define REG_LOWBAT			  0x0C
 #define REG_LISTEN1			  0x0D
 #define REG_LISTEN2			  0x0E
@@ -93,6 +93,7 @@
 #define REG_TESTPA1       0x5A //only present on RFM69HW/SX1231H
 #define REG_TESTPA2       0x5C //only present on RFM69HW/SX1231H
 #define REG_TESTDAGC      0x6F
+#define REG_TESTAFC       0x71
 
 //******************************************************
 // RF69/SX1231 bit control definition
@@ -180,6 +181,8 @@
 // RegFdev - frequency deviation (Hz)
 #define RF_FDEVMSB_2000							0x00
 #define RF_FDEVLSB_2000							0x21
+#define RF_FDEVMSB_4800							0x00
+#define RF_FDEVLSB_4800							0x4e
 #define RF_FDEVMSB_5000							0x00  // Default
 #define RF_FDEVLSB_5000							0x52  // Default
 #define RF_FDEVMSB_7500							0x00
@@ -392,10 +395,13 @@
 #define RF_FRFMID_928							0x00
 #define RF_FRFLSB_928							0x00
 
-
 // RegOsc1
 #define RF_OSC1_RCCAL_START				0x80
 #define RF_OSC1_RCCAL_DONE				0x40
+
+// RegAfcCtrl
+#define RF_AFCLOWBETA_ON					0x20
+#define RF_AFCLOWBETA_OFF					0x00	// Default
 
 // RegLowBat
 #define RF_LOWBAT_MONITOR					0x10
@@ -1041,6 +1047,8 @@
 #define RF_TEMP1_ADCLOWPOWER_ON			0x01  // Default
 #define RF_TEMP1_ADCLOWPOWER_OFF		0x00
 
-// RegTestDagc 0x6F: demodulator config and IO mode config
-#define RF_DAGC_CONTINUOUS          0x20    // true = DAGC updated every two bits
+// RegTestDagc
+#define RF_DAGC_NORMAL              0x00  // Reset value
+#define RF_DAGC_IMPROVED_LOWBETA1   0x20  //
+#define RF_DAGC_IMPROVED_LOWBETA0   0x30  // Recommended default
 
