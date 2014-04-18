@@ -6,7 +6,7 @@
 #define BULK_EP_SIZE    64      /* This is the max. ep size.	*/
 
 EFM32_ALIGN(4)
-static const USB_DeviceDescriptor_TypeDef deviceDesc __attribute__ ((aligned(4)))=
+const USB_DeviceDescriptor_TypeDef deviceDesc __attribute__ ((aligned(4)))=
 {
   .bLength            = USB_DEVICE_DESCSIZE,
   .bDescriptorType    = USB_DEVICE_DESCRIPTOR,
@@ -33,7 +33,7 @@ static const USB_DeviceDescriptor_TypeDef deviceDesc __attribute__ ((aligned(4))
                           5 )
 
 EFM32_ALIGN(4)
-static const uint8_t configDesc[] __attribute__ ((aligned(4)))=
+const uint8_t configDesc[] __attribute__ ((aligned(4)))=
 {
   /*** Configuration descriptor ***/
   USB_CONFIG_DESCSIZE,    /* bLength                                   */
@@ -136,7 +136,7 @@ STATIC_CONST_STRING_DESC_LANGID( langID, 0x04, 0x09 );
 STATIC_CONST_STRING_DESC( iManufacturer, L"Energy Micro AS" );
 STATIC_CONST_STRING_DESC( iProduct     , L"EFM32 USB CDC serial port device" );
 
-static const void * const strings[] =
+const void * const strings[] =
 {
   &langID,
   &iManufacturer,
@@ -146,9 +146,9 @@ static const void * const strings[] =
 /* Endpoint buffer sizes */
 /* 1 = single buffer, 2 = double buffering, 3 = triple buffering ...  */
 /* Use double buffering on the BULK endpoints.                        */
-static uint8_t bufferingMultiplier[ NUM_EP_USED + 1 ] = { 1, 1, 2, 2 };
+const uint8_t bufferingMultiplier[ NUM_EP_USED + 1 ] = { 1, 1, 2, 2 };
 
-static const USBD_Callbacks_TypeDef callbacks =
+const USBD_Callbacks_TypeDef callbacks =
 {
   .usbReset        = NULL,
   .usbStateChange  = CDC_StateChange,
@@ -157,7 +157,7 @@ static const USBD_Callbacks_TypeDef callbacks =
   .sofInt          = NULL
 };
 
-static const USBD_Init_TypeDef initstruct =
+const USBD_Init_TypeDef USBD_Init_Config =
 {
   .deviceDescriptor    = &deviceDesc,
   .configDescriptor    = configDesc,

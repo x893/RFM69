@@ -3,6 +3,7 @@
 #include "cdc.h"
 
 bool CDC_Configured = false;
+uint16_t CDC_ControlLine = 0;
 
 /* The serial port LINE CODING data structure, used to carry information  */
 /* about serial port baudrate, parity etc. between host and device.       */
@@ -85,10 +86,16 @@ int CDC_SetupCmd( const USB_Setup_TypeDef *setup )
 					( setup->wLength   == 0 ) )        /* No data        */
 				{
 					/* Do nothing ( Non compliant behaviour !! ) */
+					CDC_ControlLine = setup->wValue;
 					retVal = USB_STATUS_OK;
 				}
 				break;
 		}
 	}
 	return retVal;
+}
+
+uint16_t USB_GetControlState(void)
+{
+	return CDC_ControlLine;
 }

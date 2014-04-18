@@ -69,18 +69,6 @@ void detachInterrupt(uint8_t);
 #endif
 
 #include "pins_arduino.h"
-
-#define USART_INIT(baud, mode)
-#define USART_DEINIT()
-#define USART_WRITE(data)
-#define USART_READ()				(0)
-#define USART_STATUS(state)			(1)
-#define		USART_RX_READY			0x01
-#define		USART_TX_COMPLETE		0x02
-#define	USART_CONTROL(state)
-#define		USART_RX_INT_ENABLE		0x01
-#define		USART_RX_INT_DISABLE	0x02
-#define		USART_TX_INT_ENABLE		0x04
-#define		USART_TX_INT_DISABLE	0x18
+#include "bsp.h"
 
 #endif

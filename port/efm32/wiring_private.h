@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-#include "Arduino.h"
+#include <Arduino.h>
+#include "em_gpio.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -21,6 +22,16 @@ extern "C"{
 #define EXTERNAL_INT_7 7
 
 typedef void (*voidFuncPtr)(void);
+
+typedef struct GpioPin_s {
+	GPIO_Port_TypeDef Port;
+	unsigned int Pin;
+} GpioPin_t;
+
+#define PIN(pin)	(pin & 0x0F)
+#define PORT(pin)	((GPIO_Port_TypeDef)((pin & 0xF0) >> 4))
+
+bool pinToGpio(uint8_t pin, GpioPin_t * gpio);
 
 #ifdef __cplusplus
 } // extern "C"

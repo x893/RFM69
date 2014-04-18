@@ -14,6 +14,8 @@ void USB_txString	(const char *src);
 void USB_txBytes	(const uint8_t *src, uint16_t len);
 void USB_rxAccept	(USB_RxAccept_TypeDef cbAccept, void *cbData);
 bool USB_rxStatusOK	(void);
+uint16_t USB_GetControlState(void);
+
 #define PUTCHAR(c)	USB_txByte(c)
 
 #ifdef __cplusplus

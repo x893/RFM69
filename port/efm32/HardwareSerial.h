@@ -29,6 +29,8 @@ class HardwareSerial : public Stream
 		
 		void puts(const char *s);
 		void puts(const uint8_t *s, int length);
+		bool DTR();
+		bool RTS();
 };
 
 // Define config for Serial.begin(baud, config);

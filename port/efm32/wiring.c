@@ -8,38 +8,14 @@
 #include "em_chip.h"
 #include "em_gpio.h"
 
-#include "bsp.h"
-
 #include "em_usb.h"
 #include "cdc.h"
 #include "usbio.h"
+#include "wiring_private.h"
 
+#if defined( USB_PRESENT ) && ( USB_COUNT == 1 )
 #include "descriptors.h"
-
-/** Version string, used when the user connects */
-#define USBCDC_VERSION_STRING "USBCDC 1.01"
-
-volatile uint32_t timer0_millis = 0;
-void SysTick_Handler(void)
-{
-	timer0_millis++;
-}
-
-uint32_t millis()
-{
-	return timer0_millis;
-}
-
-void delay(uint32_t ms)
-{
-	uint32_t start = millis();
-	while (ms > 0) {
-		if (start != millis()) {
-			start = millis();
-			ms--;
-		}
-	}
-}
+#endif
 
 void init()
 {
@@ -59,32 +35,31 @@ void init()
 			;
 
 	BSP_LedsInit();
+	BSP_LedsInit();
 	BSP_LedSet(1);
 
 	USBTIMER_Init();
-	USBD_Init( &initstruct );       /* Start USB CDC functionality  */
-	BSP_LedClear(0);
+	USBD_Init( &USBD_Init_Config );       /* Start USB CDC functionality  */
+	BSP_LedClear(1);
 }
 
-typedef struct GpioPin_s {
-	GPIO_Port_TypeDef Port;
-	unsigned int Pin;
-} GpioPin_t;
-
-#define PIN(pin)	(pin & 0x0F)
-#define PORT(pin)	((GPIO_Port_TypeDef)((pin & 0xF0) >> 4))
-
 const uint8_t pin2Pin[] = {
-	PIN_UNUSED,	PIN_UNUSED,	PIN_UNUSED,	PIN_UNUSED,	//  0 -  3
+	PIN_UNUSED,	PIN_UNUSED,	PIN(PC0),	PIN_UNUSED,	//  0 -  3
 	PIN_UNUSED,	PIN_UNUSED,	PIN_UNUSED,	PIN_UNUSED,	//  4 -  7
 	PIN_UNUSED,	PIN_UNUSED,	PIN(PD3), 	PIN(PD0),	//  8 - 11
-	PIN(PD1),	PIN(PD2)							// 12 - 13
+	PIN(PD1),	PIN(PD2),							// 12 - 13
+	PIN(PB9),										// 14 - Button PB0
+	PIN(PB10),										// 15 - Button PB1
+	PIN(PE2),										// 16 - LED0
+	PIN(PE3),										// 17 - LED1
 };
 const GPIO_Port_TypeDef pin2Port [] = {
-	gpioPortA,	gpioPortA,	gpioPortA,	gpioPortA,	//  0 -  3
+	gpioPortA,	gpioPortA,	PORT(PC0),	gpioPortA,	//  0 -  3
 	gpioPortA,	gpioPortA,	gpioPortA,	gpioPortA,	//  4 -  7
 	gpioPortA,	gpioPortA,	PORT(PD3),	PORT(PD0),	//  8 - 11
-	PORT(PD1),	PORT(PD2)							// 12 - 13
+	PORT(PD1),	PORT(PD2),							// 12 - 13
+	PORT(PB9),	PORT(PB10),		// 14-15 Buttons
+	PORT(PE2),	PORT(PE3)		// 16-17 LEDs
 };
 
 bool pinToGpio(uint8_t pin, GpioPin_t * gpio)
@@ -159,4 +134,26 @@ int digitalRead(uint8_t pin)
 		return GPIO_PinInGet(gpio.Port, gpio.Pin);
 	}
 	return 0;
+}
+
+volatile uint32_t timer0_millis = 0;
+void SysTick_Handler(void)
+{
+	timer0_millis++;
+}
+
+uint32_t millis()
+{
+	return timer0_millis;
+}
+
+void delay(uint32_t ms)
+{
+	uint32_t start = millis();
+	while (ms > 0) {
+		if (start != millis()) {
+			start = millis();
+			ms--;
+		}
+	}
 }

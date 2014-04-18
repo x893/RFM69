@@ -65,6 +65,15 @@ HardwareSerial::HardwareSerial(ring_buffer *rx_buffer)
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
+bool HardwareSerial::DTR()
+{
+	return (USB_GetControlState() & 0x01 ? 1 : 0);
+}
+
+bool HardwareSerial::RTS()
+{
+	return (USB_GetControlState() & 0x02 ? 1 : 0);
+}
 
 void HardwareSerial::begin(uint32_t baud)
 {

@@ -4,26 +4,18 @@ int main(void)
 {
 	init();
 
-	Serial.begin(115200);
-	while (!Serial.available())
+	while (!Serial.DTR())
 	{
-		delay(1000);
-		Serial.println("Press a key to start");
+		delay(250);
+		BSP_LedToggle(1);
 	}
-	Serial.println("setup() ... ");
+	BSP_LedClear(1);
 
 	// setup();
 
-	Serial.println("OK");
-	Serial.println("loop() TTY echo");
 	for (;;)
 	{
-		while (Serial.available())
-		{
-			Serial.write(Serial.read());
-		}
 		// loop();
-
 		if (serialEventRun) serialEventRun();
 	}
 }
